@@ -46,3 +46,12 @@
   - 对应结果分别存在：self.true_pi_tab, self.true_state_value_tab, self.true_action_value_tab
 - `plot_standard_map()`
   - 绘制标准最优的policy，以及state values
+- `plot_end_map()`
+  - 绘制自己algorithm执行完后的policy，以及state values
+- `push_state_value()`
+  - 将此时self.state_value_tab与self.true_state_value_tab的MSE push进self.convergence里
+- `plot_end_convergence()`
+  - 绘制自己algorithm的收敛图
+  - 使用前提是每次迭代都调用一次push_state_value()接口
+- `report()`
+  - 输出自己algorithm的文字报告

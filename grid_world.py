@@ -14,6 +14,7 @@ class GRID_WORLD:
         self.r_end = r_end
         self.r_seq = [0, r_bar, r_out, r_end]
         self.s_seq = [(i, j) for i in range(n) for j in range(m)]
+        self.a_seq = [i for i in range(5)]
         self.random_seed = random_seed
         self.prob_reward_tab = {}       # p(r|s,a) （准确计算出来的）
         self.prob_state_tab = {}        # p(s'|s,a)（准确计算出来的）
@@ -31,6 +32,8 @@ class GRID_WORLD:
         self.eps = eps
         if autocal == True:
             self.cal_pi_state_and_action_value()
+
+        self.convergence = []   # 存algorithm的state values与标准state values之间的MSE
     
     def generate_grid_world(self):
         n = self.n
@@ -265,7 +268,7 @@ class GRID_WORLD:
         while True:
             # 计算action values
             for state in self.s_seq:
-                for action in range(5):
+                for action in self.a_seq:
                     sum1 = 0
                     for r in self.r_seq:
                         sum1 += self.prob_reward(state, action, r) * r
@@ -278,7 +281,7 @@ class GRID_WORLD:
             for state in self.s_seq:
                 pos = -1
                 maxx = float('-inf')
-                for action in range(5):
+                for action in self.a_seq:
                     self.upd_pi(state, action, 0, pi_k)
                     v = self.action_value(state, action, action_value)
                     if v > maxx:
@@ -287,7 +290,7 @@ class GRID_WORLD:
                 self.upd_pi(state, pos, 1, pi_k)
             # state value udpate
             for state in self.s_seq:
-                for action in range(5):
+                for action in self.a_seq:
                     if self.pi(state, action, pi_k) == 1:
                         self.upd_state_value(state, self.action_value(state, action, action_value), state_value_k)
             # 判断是否该退出
@@ -347,7 +350,7 @@ class GRID_WORLD:
         for i in range(self.n):
             for j in range(self.m):
                 pos = -1
-                for action in range(5):
+                for action in self.a_seq:
                     if self.pi((i,j), action, self.true_pi_tab) == 1:
                         pos = action
                 if pos == 0:
@@ -376,20 +379,96 @@ class GRID_WORLD:
 
         plt.show()
 
-# -------------------------------------------------------------------------------------------
+    def plot_end_map(self):
+        fig, ax = plt.subplots()    # 创建图层、坐标轴
+        ax.set_aspect('equal')      # x. y轴保持一样的比例
 
-# 实例化
-grid_world = GRID_WORLD(
-    random_seed = None,         # 随机种子（生成网格世界）
-    n = 10,                     # 网格世界的长度
-    m = 10,                     # 网格世界的宽度
-    bar_ratio = 0.3,            # 障碍的比例
-    r_bar = -100,               # 障碍的reward
-    r_out = -1,                 # 碰到边界的reward
-    r_end = 10,                 # 达到终点的reward
-    autocal = 1,                # 是否使用内置算法(值迭代)计算最优policy, state values, action values
-    gamma = 0.9,                # 值迭代算法的gamma
-    eps = 1e-5,                 # 值迭代算法的收敛条件
-)
+        # 绘制网格
+        for i in range(self.n + 1):
+            ax.axhline(i, color='black', linewidth=0.5)
+        for i in range(self.m + 1):
+            ax.axvline(i, color='black', linewidth=0.5)
 
-grid_world.plot_standard_map()
+        # 设置坐标轴刻度，使其位于每个格子的中间
+        ax.set_xticks([j + 0.5 for j in range(self.m)])
+        ax.set_yticks([i + 0.5 for i in range(self.n)])
+
+        # 设置坐标轴刻度标签
+        ax.set_xticklabels([i for i in range(self.m)])
+        ax.set_yticklabels([i for i in range(self.n)])
+
+        # 隐藏顶部和右侧的刻度线
+        ax.tick_params(axis='both', which='both', bottom=False, top=False, left=False, right=False)
+
+        # 绘制障碍物
+        for i in range(self.n):
+            for j in range(self.m):
+                if self.grid_map[i, j] == -1:
+                    rect = patches.Rectangle((j, i), 1, 1, linewidth=1, edgecolor='orange', facecolor='orange')
+                    ax.add_patch(rect)
+
+        # 绘制起点
+        for i in range(self.n):
+            for j in range(self.m):
+                if self.grid_map[i, j] == 1:
+                    rect = patches.Rectangle((j, i), 1, 1, linewidth=1, edgecolor='pink', facecolor='pink')
+                    ax.add_patch(rect)
+
+        # 绘制终点
+        for i in range(self.n):
+            for j in range(self.m):
+                if self.grid_map[i, j] == 2:
+                    rect = patches.Rectangle((j, i), 1, 1, linewidth=1, edgecolor='#ADD8E6', facecolor='#ADD8E6')
+                    ax.add_patch(rect)
+
+        # 绘制箭头
+        for i in range(self.n):
+            for j in range(self.m):
+                sum = 0
+                for action in self.a_seq:
+                    sum += self.pi((i,j), action)
+                for action in self.a_seq:
+                    ratio = self.pi((i,j), action) / sum
+                    if ratio > 1e-8:
+                        if action == 0:
+                            circle = patches.Circle((j + 0.5, i + 0.5), 0.05 * ratio, fc='g', ec='g')
+                            ax.add_patch(circle)
+                        elif action == 1:
+                            ax.arrow(j + 0.5, i + 0.5, 0, -0.2 * ratio, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                        elif action == 2:
+                            ax.arrow(j + 0.5, i + 0.5, 0, 0.2 * ratio, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                        elif action == 3:
+                            ax.arrow(j + 0.5, i + 0.5, -0.2 * ratio, 0, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                        elif action == 4:
+                            ax.arrow(j + 0.5, i + 0.5, 0.2 * ratio, 0, head_width=0.2, head_length=0.1, fc='g', ec='g')
+
+        # 绘制数字
+        for i in range(self.n):
+            for j in range(self.m):
+                number = self.state_value((i,j))
+                number = round(number, 1)
+                ax.text(j + 0.5, i + 0.5, str(number), ha='center', va='center', color='black', fontsize=12)
+
+        # 设置轴范围
+        ax.set_xlim(0, self.m)
+        ax.set_ylim(0, self.n)
+        ax.invert_yaxis()  # 使 (0,0) 在左上角
+
+        plt.show()
+
+    def push_state_value(self):
+        self.convergence.append(self.get_state_value_Gap(self.state_value_tab, self.true_state_value_tab))
+
+    def plot_end_convergence(self):
+        plt.figure(figsize=(10, 5))
+        plt.plot(self.convergence, linestyle='-', color='b')  # 绘制误差列表
+        plt.title('Convergence Plot')
+        plt.xlabel('Iteration')
+        plt.ylabel('Error')
+        plt.grid(True)
+        plt.show()
+    
+    def report(self):
+        print('-------------------------------------------')
+        print('迭代次数: ', len(self.convergence))
+        print('-------------------------------------------')
