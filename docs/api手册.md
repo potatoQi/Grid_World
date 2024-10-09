@@ -1,0 +1,48 @@
+### GRID_WORLD
+
+- `generate_grid_world()`
+  - 创建网格世界，参数在实例化时设置
+- `is_out(x, y)`
+  - 判断(x,y)是否出界
+- `move(state, action)`
+  - 在当前state，执行action后，返回下一步的state
+- `pi(state, action, obj)`
+  - 返回p(s, a)
+  - obj默认是None，即返回的是algorithm的p(s, a)
+  - 若obj=self.true_pi_tab，则返回的是标准的p(s, a)
+  - 前提是实例化时开启autocal参数
+- `state_value(state, obj)`
+  - 返回v(s)
+  - obj默认是None，即返回的是algorithm的v(s)
+  - 若obj=self.true_state_value_tab，则返回标准的v(s)
+  - 前提是实例化时开启autocal参数
+- `action_value(state, action, obj)`
+  - 返回q(s, a)
+  - obj默认是None，即返回的algorithm的q(s, a)
+  - 若obj=self.true_action_value_tab，则返回标准的q(s, a)
+  - 前提是实例化时开启autocal参数
+- `prob_reward(state, action, reward)`
+  - 返回p(r | s, a)
+- `prob_state(state_1, action, state_2)`
+  - 返回p(s' | s, a)
+- `plot_start_map()`
+  - 绘制生成的初始地图
+- `upd_pi(state, action, val, obj)`
+  - 更新π(a | s)为val
+  - obj默认是None，即algorithm的π(a | s)
+  - 若obj=self.true_pi_tab，则更新标准的π(a | s)
+- `upd_state_value(state, val, obj)`
+  - 更新v(s)为val
+  - obj默认是None，即algorithm的v(s)
+  - 若obj=self.true_state_value_tab，则更新标准的v(s)
+- `upd_action_value(state, action, val, obj)`
+  - 更新q(s, a)为val
+  - obj默认是None,即algorithm的q(s, a)
+  - 若obj=self.true_action_value_tab，则更新标准的q(s, a)
+- `get_state_value_Gap(a, b)`
+  - 返回两个state values之间的MSE
+- `cal_pi_state_and_action_value()`
+  - 计算出标准的π(a | s), v(s), q(s, a)
+  - 对应结果分别存在：self.true_pi_tab, self.true_state_value_tab, self.true_action_value_tab
+- `plot_standard_map()`
+  - 绘制标准最优的policy，以及state values
