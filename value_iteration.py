@@ -46,7 +46,8 @@ TODO: 请完善函数value_iteration()
 
     2. 当您的algorithm正文结束后, 运行a.plot_end_map()可视化algorithm的最终policy
 
-    3. 若想查看algorithm的收敛图, 请在algorithm每一次迭代后加上语句a.push_state_value(), 并在algorithm正文结束后, 运行a.plot_end_convergence()可视化algorithm的收敛情况
+    3. 若想查看algorithm的收敛图, 请在algorithm每一次迭代后加上语句a.push_state_value([online]), online=True将开启实时画图
+        并在algorithm正文结束后, 运行a.plot_end_convergence()可视化algorithm的收敛情况
 
     4. 若想查看algorithm的文字报告, 当您的algorithm正文结束后, 运行a.report()
 '''
@@ -92,7 +93,7 @@ def value_iteration():
         else:
             a.state_value_tab = copy.deepcopy(state_value_k)
             a.pi_tab = copy.deepcopy(pi_k)
-            a.push_state_value()
+            a.push_state_value(online=True)
 
     # check自己的算法
     end_time = time.time()  # 记录结束时间

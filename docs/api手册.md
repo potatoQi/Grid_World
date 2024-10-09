@@ -47,9 +47,10 @@
 - `plot_standard_map()`
   - 绘制标准最优的policy，以及state values
 - `plot_end_map()`
-  - 绘制自己algorithm执行完后的policy，以及state values
-- `push_state_value()`
+  - 绘制当前的policy，以及state values
+- `push_state_value([online])`
   - 将此时self.state_value_tab与self.true_state_value_tab的MSE push进self.convergence里
+  - online默认为False，当为True时，将开启实时绘图
 - `plot_end_convergence()`
   - 绘制自己algorithm的收敛图
   - 使用前提是每次迭代都调用一次push_state_value()接口
