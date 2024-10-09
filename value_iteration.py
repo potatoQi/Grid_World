@@ -20,18 +20,21 @@ TODO: 请完善函数value_iteration()
 
 关于接口：
     1. 环境对象已实例化为'a', 实例化参数可更改，请合理利用接口, 可用的接口如下:
-        0)  属性, a.gamma:                              γ
-        1)  属性, a.pi_tav:                             π(a | s)
-        2)  属性, a.state_value_tab:                    v(s)
-        3)  属性, a.action_value_tab:                   q(s, a)
-        4)  方法, a.prob_reward(s, a, r):               p(r | s, a)
-        5)  方法, a.prob_state(s, a, s'):               p(s' | s, a)
-        6)  方法, a.pi(s, a, [obj]):                    读取π(a | s)
-        7)  方法, a.state_value(s, [obj]):              读取v(s)
-        8)  方法, a.action_value(s, a, [obj]):          读取q(s, a)
-        9)  方法, a.upd_pi(s, a, val, [obj]):           修改π(a | s)为val
-        10) 方法, a.upd_state_value(s, val, [obj]):     修改v(s)为val
-        11) 方法, a.upd_action_value(s, a, val, [obj]): 修改q(s, a)为val
+        0)   属性, a.gamma:                              γ
+        1)   属性, a.s_seq:                              状态的集合
+        2)   属性, a.a_seq:                              动作的集合
+        3)   属性, a.r_seq:                              reward的集合
+        4)   属性, a.pi_tav:                             π(a | s)
+        5)   属性, a.state_value_tab:                    v(s)
+        6)   属性, a.action_value_tab:                   q(s, a)
+        7)   方法, a.prob_reward(s, a, r):               p(r | s, a)
+        8)   方法, a.prob_state(s, a, s'):               p(s' | s, a)
+        9)   方法, a.pi(s, a, [obj]):                    读取π(a | s)
+        10)  方法, a.state_value(s, [obj]):              读取v(s)
+        11)  方法, a.action_value(s, a, [obj]):          读取q(s, a)
+        12)  方法, a.upd_pi(s, a, val, [obj]):           修改π(a | s)为val
+        13)  方法, a.upd_state_value(s, val, [obj]):     修改v(s)为val
+        14)  方法, a.upd_action_value(s, a, val, [obj]): 修改q(s, a)为val
 
     2. 您与环境交互的变量为: a.pi_tab, a.state_value_tab, a.action_value_tab。
 
@@ -93,4 +96,5 @@ def value_iteration():
     a.plot_end_map()
     a.plot_end_convergence()
 
+# ------------------------------
 value_iteration()
