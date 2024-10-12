@@ -49,6 +49,8 @@ class GRID_WORLD:
         if random_seed != None:
             np.random.seed(random_seed)
 
+        print('地图生成中... ...')
+
         # 地图
         a = [[0 for j in range(m)] for i in range(n)]
         a = np.array(a)
@@ -97,6 +99,8 @@ class GRID_WORLD:
 
         self.grid_map = a
         self.grid_r = r
+
+        print('地图生成完毕!')
 
         return a, r, x_str, y_str, x_end, y_end
 
@@ -259,6 +263,8 @@ class GRID_WORLD:
         return sum
 
     def cal_pi_state_and_action_value(self):
+        print('内置算法计算中... ...')
+
         # copy.deepcopy(self.b)
         # 因为字典是可变对象，所以修改pi/state_value/action_value的同时就已经在修改self.true_...了
         pi = self.true_pi_tab
@@ -306,6 +312,8 @@ class GRID_WORLD:
         self.true_pi_tab = copy.deepcopy(pi)
         self.true_state_value_tab = copy.deepcopy(state_value)
         self.true_action_value_tab = copy.deepcopy(action_value)
+
+        print('内置算法计算完毕, 标准state/action value已得到')
 
     def plot_standard_map(self):
         fig, ax = plt.subplots()    # 创建图层、坐标轴
@@ -468,6 +476,11 @@ class GRID_WORLD:
         if online == True:
             self.plot_end_map()
 
+    def push_action_value(self, online=False):
+        self.convergence.append(self.get_action_value_Gap(self.action_value_tab, self.true_action_value_tab))
+        if online == True:
+            self.plot_end_map()
+
     def plot_end_convergence(self):
         plt.figure(figsize=(10, 5))
         plt.plot(self.convergence, linestyle='-', color='b')  # 绘制误差列表
@@ -478,14 +491,14 @@ class GRID_WORLD:
         plt.show()
     
     def report(self):
-        print('-------------------------------------------')
         print('迭代次数: ', len(self.convergence))
-        print('-------------------------------------------')
+        print('state value与标准的差距: ', self.get_state_value_Gap(self.state_value_tab, self.true_state_value_tab))
+        print('action value与标准的差距: ', self.get_action_value_Gap(self.action_value_tab, self.true_action_value_tab))
 
     def get_move_reward(self, state, action):
         x, y = self.move(state, action)
         if self.is_out(x, y):
-            x, y = state
+            return self.r_out
         return self.grid_r[x, y]
     
     def get_action_value_Gap(self, a, b):

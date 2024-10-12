@@ -13,13 +13,13 @@ a = GRID_WORLD(
     r_bar = -100,               # 障碍的reward
     r_out = -1,                 # 碰到边界的reward
     r_end = 10,                 # 达到终点的reward
-    autocal = 1,                # 是否使用内置算法(值迭代)计算最优policy, state values, action values
+    autocal = 0,                # 是否使用内置算法(值迭代)计算最优policy, state values, action values
     gamma = 0.9,                # 值迭代算法的gamma
     eps = 1e-5,                 # 值迭代算法的收敛条件
 )
 
 '''
-TODO: 请完善函数MC_Basic()
+TODO: 请完善函数MC_Exploring_Starts()
 
 关于接口：
     1. 环境对象已实例化为'a', 实例化参数可更改，请合理利用接口, 可用的接口如下:
@@ -59,61 +59,83 @@ TODO: 请完善函数MC_Basic()
 def sampling(state, action, maxLength=100):
     pipe = [(state, action, a.get_move_reward(state, action))]
     for i in range(maxLength):
-
         state_new = a.move(state, action)
-        if a.is_out(state_new[0], state_new[1]):
+        if a.is_out(*state_new):
             state_new = state
 
         for aa in a.a_seq:
             if a.pi(state_new, aa) == 1:
                 action_new = aa
                 break
-
+        
         reward_new = a.get_move_reward(state_new, action_new)
 
         pipe.append((state_new, action_new, reward_new))
-
         state = state_new
         action = action_new
+    
     return pipe
 
+def policy_improve(state):
+    best_action = -1
+    max_val = -1e10
+    for action in a.a_seq:
+        a.upd_pi(state, action, 0)
+        val = a.action_value(state, action)
+        if val > max_val:
+            max_val = val
+            best_action = action
+    a.upd_pi(state, best_action, 1)
 
-def MC_Basic():
+def MC_Exploring_Starts():
     start_time = time.time()  # 记录开始时间
     
-    # 初始化policy
+    q_s = {}
+    cnt = {}
     for state in a.s_seq:
         for action in a.a_seq:
-            a.upd_pi(state, np.random.randint(4 + 1), 1)
+            q_s[state, action] = 0
+            cnt[state, action] = 0
 
-    # 临时量
     q_t = copy.deepcopy(a.action_value_tab)
 
+    for state in a.s_seq:
+        a.upd_pi(state, np.random.randint(4 + 1), 1)
+
     while 1:
+        # 如果不加这个，收敛越接近0，速度就越慢
+        # 我觉得是因为不加的话，就会受到历史的影响太多了，因为历史的采样是根据历史策略采出来的，而历史策略又不太好
+        # 所以说隔一段时间，对于action value就需要重新建立评估
+        for state in a.s_seq:
+            for action in a.a_seq:
+                q_s[state, action] = 0
+                cnt[state, action] = 0
+
         for state in a.s_seq:
             for action in a.a_seq:
                 pipe = sampling(state, action, maxLength=100)
                 sum = 0
                 for item in reversed(pipe):
-                    sum = item[2] + a.gamma * sum
-                a.upd_action_value(state, action, sum)
-            
-                best_action = -1
-                max_val = -1e10
-                for aa in a.a_seq:
-                    a.upd_pi(state, aa, 0)
-                    val = a.action_value(state, aa)
-                    if val > max_val:
-                        max_val = val
-                        best_action = aa
-                a.upd_pi(state, best_action, 1)
-        
-        if a.get_action_value_Gap(q_t, a.action_value_tab) < 1e-5:
+                    ss, aa, rr = item
+                    sum = rr + a.gamma * sum
+
+                    cnt[ss, aa] += 1
+                    q_s[ss, aa] += sum
+
+                    a.upd_action_value(ss, aa, q_s[ss, aa] / cnt[ss, aa])
+                # 这里挺玄学的，就是policy更新的越及时，收敛就越困难
+                # 其实也可以解释一下，就是你尝到点甜头就更新，很容易陷入局部最优
+                # 但是你收集完一波甜头之后，再做出更新，就会考虑的更全面
+                policy_improve(state)
+
+        error = a.get_action_value_Gap(a.action_value_tab, q_t)
+        print(error)
+        if error < 1e-3:
             break
         else:
             q_t = copy.deepcopy(a.action_value_tab)
             a.push_action_value(online=True)
-    
+
     end_time = time.time()  # 记录结束时间
     print(f"算法运行时间：{end_time - start_time}秒")   
     a.report()
@@ -121,4 +143,4 @@ def MC_Basic():
     a.plot_end_convergence()
 
 # ------------------------------------------------
-MC_Basic()
+MC_Exploring_Starts()

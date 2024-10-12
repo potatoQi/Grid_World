@@ -11,6 +11,7 @@
   - 实现了内置算法(值迭代)
   - 实现了值/策略迭代算法的std code和测评功能
 - 2024/10/12:
-  - 添加了MC Basic算法
+  - 添加了MC Basic、MC Exploring Starts算法
   - 新增了`get_move_reward(state, action)`和`get_action_value_Gap(q1, q2)`两个接口
   - `plot_end_map(Flush=True)`接口新增了Flush参数，为True可以刷新显示
+  - 新增了`push_action_value(self, online=False)`接口

@@ -61,3 +61,6 @@
   - 返回在state执行action后的reward
 - `get_action_value_Gap(q1, q2)`
   - 返回两个action_value_tab的差距
+- `push_action_value(online=False)`
+  - 将此时self.action_value_tab与self.true_action_value_tab的MSE push进self.convergence里
+  - online默认为False，当为True时，将开启实时绘图
