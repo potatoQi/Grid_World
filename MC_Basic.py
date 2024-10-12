@@ -1,8 +1,8 @@
 from grid_world import GRID_WORLD
 import copy
-import sys
 import numpy as np
 import time
+import sys
 
 # 实例化
 a = GRID_WORLD(
@@ -19,7 +19,7 @@ a = GRID_WORLD(
 )
 
 '''
-TODO: 请完善函数policy_iteration()
+TODO: 请完善函数MC_Basic()
 
 关于接口：
     1. 环境对象已实例化为'a', 实例化参数可更改，请合理利用接口, 可用的接口如下:
@@ -38,6 +38,8 @@ TODO: 请完善函数policy_iteration()
         12)  方法, a.upd_pi(s, a, val, [obj]):           修改π(a | s)为val
         13)  方法, a.upd_state_value(s, val, [obj]):     修改v(s)为val
         14)  方法, a.upd_action_value(s, a, val, [obj]): 修改q(s, a)为val
+        15)  方法, a.get_move_reward(s, a):              返回在s执行a后的reward
+        16)  方法, a.get_action_value_Gap(q1, q2):       返回俩action value之间的差距
 
     2. 您与环境交互的变量为: a.pi_tab, a.state_value_tab, a.action_value_tab。
 
@@ -54,77 +56,68 @@ TODO: 请完善函数policy_iteration()
     4. 若想查看algorithm的文字报告, 当您的algorithm正文结束后, 运行a.report()
 '''
 
-def policy_iteration():
-    start_time = time.time()  # 记录开始时间
+def sampling(state, action, maxLength=100):
+    pipe = [(state, action, a.get_move_reward(state, action))]
+    for i in range(maxLength):
 
-    # 定义下一个时刻的policy
-    pi_k = copy.deepcopy(a.pi_tab)
+        state_new = a.move(state, action)
+        if a.is_out(state_new[0], state_new[1]):
+            state_new = state
 
-    # 当前时刻刚开始时的state value
-    v_tmp = copy.deepcopy(a.state_value_tab)
-
-    # 初始化当前时刻的policy（易错：这里不初始化的话state_value_tab更新不下去）
-    for state in a.s_seq:
-        t = np.random.randint(0, 4 + 1)
-        a.upd_pi(state, t, 1)
-
-    while True:
-        # 当前的policy为a.pi_tab, state value为a.state_value_tab
-        # 那么要基于这个policy迭代算出state value
-        v_k = copy.deepcopy(a.state_value_tab)
-        while 1:
-            for state in a.s_seq:
-                sum1 = 0
-                for action in a.a_seq:
-                    sum2_1, sum2_2 = 0, 0
-                    for r in a.r_seq:
-                        sum2_1 += r * a.prob_reward(state, action, r)
-                    for ss in a.s_seq:
-                        sum2_2 += a.prob_state(state, action, ss) * a.state_value(ss)
-                    sum1 += a.pi(state, action) * (sum2_1 + a.gamma * sum2_2)
-                a.upd_state_value(state, sum1, v_k)
-
-            if a.get_state_value_Gap(a.state_value_tab, v_k) < 1e-5:
+        for aa in a.a_seq:
+            if a.pi(state_new, aa) == 1:
+                action_new = aa
                 break
-            else:
-                a.state_value_tab = copy.deepcopy(v_k)
 
-        # 算出基于此时a.state_value_tab的action value，同时在线更新policy
-        # 经实测，这里在线或者离线更新policy都可以收敛
+        reward_new = a.get_move_reward(state_new, action_new)
+
+        pipe.append((state_new, action_new, reward_new))
+
+        state = state_new
+        action = action_new
+    return pipe
+
+
+def MC_Basic():
+    start_time = time.time()  # 记录开始时间
+    
+    # 初始化policy
+    for state in a.s_seq:
+        for action in a.a_seq:
+            a.upd_pi(state, np.random.randint(4 + 1), 1)
+
+    # 临时量
+    q_t = copy.deepcopy(a.action_value_tab)
+
+    while 1:
         for state in a.s_seq:
             for action in a.a_seq:
-                sum1 = 0
-                for r in a.r_seq:
-                    sum1 += r * a.prob_reward(state, action, r)
-                sum2 = 0
-                for ss in a.s_seq:
-                    sum2 += a.prob_state(state, action, ss) * a.state_value(ss)
-                a.upd_action_value(state, action, sum1 + sum2 * a.gamma)
-            # 计算完一组q(s, a)就更新下π(s, a)
+                pipe = sampling(state, action, maxLength=100)
+                sum = 0
+                for item in reversed(pipe):
+                    sum = item[2] + a.gamma * sum
+                a.upd_action_value(state, action, sum)
+            
             best_action = -1
             max_val = -1e10
             for action in a.a_seq:
-                a.upd_pi(state, action, 0, pi_k)
-                v = a.action_value(state, action)
-                if v > max_val:
-                    max_val = v
+                a.upd_pi(state, action, 0)
+                val = a.action_value(state, action)
+                if val > max_val:
+                    max_val = val
                     best_action = action
-            a.upd_pi(state, best_action, 1, pi_k)
-
-        # 结束条件
-        if a.get_state_value_Gap(v_tmp, a.state_value_tab) < 1e-5:
+            a.upd_pi(state, best_action, 1)
+        
+        if a.get_action_value_Gap(q_t, a.action_value_tab) < 1e-5:
             break
         else:
-            v_tmp = copy.deepcopy(a.state_value_tab)
-            a.pi_tab = copy.deepcopy(pi_k)
-            a.push_state_value()
-
-    # check自己的算法
+            q_t = copy.deepcopy(a.action_value_tab)
+            a.push_state_value(online=True)
+    
     end_time = time.time()  # 记录结束时间
     print(f"算法运行时间：{end_time - start_time}秒")   
     a.report()
-    a.plot_end_map()
-    a.plot_end_convergence()
+    a.plot_end_map(Flush=False)
 
-# ------------------------------
-policy_iteration()
+# ------------------------------------------------
+MC_Basic()

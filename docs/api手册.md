@@ -46,8 +46,9 @@
   - 对应结果分别存在：self.true_pi_tab, self.true_state_value_tab, self.true_action_value_tab
 - `plot_standard_map()`
   - 绘制标准最优的policy，以及state values
-- `plot_end_map()`
+- `plot_end_map(Flush=True)`
   - 绘制当前的policy，以及state values
+  - Flush=True时图像仅停留0.5s, False时一直停留
 - `push_state_value([online])`
   - 将此时self.state_value_tab与self.true_state_value_tab的MSE push进self.convergence里
   - online默认为False，当为True时，将开启实时绘图
@@ -56,3 +57,7 @@
   - 使用前提是每次迭代都调用一次push_state_value()接口
 - `report()`
   - 输出自己algorithm的文字报告
+- `get_move_reward(state, action)`
+  - 返回在state执行action后的reward
+- `get_action_value_Gap(q1, q2)`
+  - 返回两个action_value_tab的差距

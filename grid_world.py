@@ -382,7 +382,7 @@ class GRID_WORLD:
 
         plt.show()
 
-    def plot_end_map(self):
+    def plot_end_map(self, Flush=True):
         # 清除当前的轴
         self.ax.clear()
 
@@ -458,7 +458,10 @@ class GRID_WORLD:
         self.ax.invert_yaxis()  # 使 (0,0) 在左上角
 
         self.fig.canvas.draw()  # 刷新画布
-        plt.pause(0.5)
+        if (Flush == True):
+            plt.pause(0.5)
+        else:
+            plt.show()
 
     def push_state_value(self, online=False):
         self.convergence.append(self.get_state_value_Gap(self.state_value_tab, self.true_state_value_tab))
@@ -478,3 +481,18 @@ class GRID_WORLD:
         print('-------------------------------------------')
         print('迭代次数: ', len(self.convergence))
         print('-------------------------------------------')
+
+    def get_move_reward(self, state, action):
+        x, y = self.move(state, action)
+        if self.is_out(x, y):
+            x, y = state
+        return self.grid_r[x, y]
+    
+    def get_action_value_Gap(self, a, b):
+        sum = 0
+        for state in self.s_seq:
+            for action in self.a_seq:
+                v1 = self.action_value(state, action, a)
+                v2 = self.action_value(state, action, b)
+                sum += (v1 - v2) ** 2
+        return sum
