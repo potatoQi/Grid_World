@@ -5,6 +5,8 @@
    3. MC Basic算法：MC_Basic.py
    4. MC Exploring Starts算法：MC_Exploring_Starts.py
    5. MC epsilon greedy算法：MC_epsilon_greedy.py
+   6. Sarsa算法：Sarsa.py
+   7. Q-learning算法：Q_learning.py
 2. 按照提示，实现里面的算法函数（合理利用接口）
 3. 利用测评相关接口评测自己的algorithm
 
@@ -19,4 +21,4 @@
   - `plot_end_map(Flush=True)`接口新增了Flush参数，为True可以刷新显示
   - 新增了`push_action_value(self, online=False)`接口
 - 2024/10/13:
-  - 添加了MC epsilon greedy、Sarsa算法
+  - 添加了MC epsilon greedy、Sarsa、Q-learning算法

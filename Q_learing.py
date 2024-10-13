@@ -19,7 +19,7 @@ a = GRID_WORLD(
 )
 
 '''
-TODO: 请完善函数Sarsa()
+TODO: 请完善函数Q_learning()
 
 关于接口：
     1. 环境对象已实例化为'a', 实例化参数可更改，请合理利用接口, 可用的接口如下:
@@ -60,22 +60,22 @@ def policy_improve(state):
     best_action, max_val = -1, -1e10
     for action in a.a_seq:
         a.upd_pi(state, action, 0)
-        v = a.action_value(state, action)
-        if v > max_val:
-            max_val = v
+        val = a.action_value(state, action)
+        if val > max_val:
+            max_val = val
             best_action = action
     a.upd_pi(state, best_action, 1)
 
-def Sarsa():
+def Q_learning():
     start_time = time.time()  # 记录开始时间
-
-    for state in a.s_seq:
-        a.upd_pi(state, np.random.randint(4 + 1), 1)
-
-    alpha = 0.01
 
     q_t = copy.deepcopy(a.action_value_tab)
     
+    for state in a.s_seq:
+        a.upd_pi(state, np.random.randint(5), 1)
+
+    alpha = 0.01
+
     while 1:
         for state in a.s_seq:
             for action in a.a_seq:
@@ -88,17 +88,16 @@ def Sarsa():
                         action_new = aa
                         break
                 q = a.action_value(state, action)
-                qq = a.action_value(state_new, action_new)
+                qq = -1e10
+                for aa in a.a_seq:
+                    qq = max(qq, a.action_value(state_new, aa))
                 a.upd_action_value(state, action, q - alpha * (q - (reward + a.gamma * qq)))
-        
-        # policy improve
+
         for state in a.s_seq:
             policy_improve(state)
-
-        # 终止条件
+        
         error = a.get_action_value_Gap(q_t, a.action_value_tab)
-        print(error)
-        if error < 1e-2:
+        if error < 1e-5:
             break
         else:
             q_t = copy.deepcopy(a.action_value_tab)
@@ -111,16 +110,7 @@ def Sarsa():
     a.plot_end_convergence()
 
 # ------------------------------------------------
-# 不管什么算法，只要是model-free的
-# 如果你没有双重循环确保能保证更新到每个state-action pair，而是直接采样一条，那么你的policy更新必须要带有探险属性
-# 否则那些没在你策略中的state-action pair将永远不会被访问到（因为首先你没有双重循环，其次采样是按照你policy去采样的，而你的policy又不带有探索，所以采出来的永远是那些pairs）
-
-# 所以要么你就保证采样的同时能强制保证所有state-action pairs被访问到
-# 要么就保证你的policy具有探索性，这样robot自己会去采样到其余的pairs
-
-# 我这份代码显然是前者，即强制所有state-action pairs被访问到，并且我没采样，因为我觉得没必要，因为Sarsa本来就是MC Exploring Starts的完全记忆化版本
-# 每个状态的更新只依赖下一个状态，如果你采样的话感觉是多余的，只有前两个状态会用到，后面的状态即使我不采样后面由于我双重循环也会访问到
-
-# 当然如果把双重循环去掉，那么我可以使用采样 + 探索性policy，同样可以保证所有pairs都被访问到
-# 迭代式跟本程序一样，这也是Sarsa的另一种写法
-Sarsa()
+# 这收敛速度... ...是真快啊
+# 这准确度... ...是真高啊
+# 确实方法也很优美，很像dp递推的感觉，可以说是目前我见过的model-free里的王者了
+Q_learning()
