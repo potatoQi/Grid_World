@@ -74,6 +74,8 @@ class GRID_WORLD:
             if a[x, y] != -1:
                 x_str = x
                 y_str = y
+                self.sx = x
+                self.sy = y
                 a[x, y] = 1
                 break
 
@@ -433,6 +435,7 @@ class GRID_WORLD:
                     self.ax.add_patch(rect)
 
         # 绘制箭头
+        arrow_length = 0.4
         for i in range(self.n):
             for j in range(self.m):
                 sum = 0
@@ -445,13 +448,13 @@ class GRID_WORLD:
                             circle = patches.Circle((j + 0.5, i + 0.5), 0.05 * ratio, fc='g', ec='g')
                             self.ax.add_patch(circle)
                         elif action == 1:
-                            self.ax.arrow(j + 0.5, i + 0.5, 0, -0.2 * ratio, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                            self.ax.arrow(j + 0.5, i + 0.5, 0, -arrow_length * ratio, head_width=0.1, head_length=0.1, fc='g', ec='g')
                         elif action == 2:
-                            self.ax.arrow(j + 0.5, i + 0.5, 0, 0.2 * ratio, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                            self.ax.arrow(j + 0.5, i + 0.5, 0, arrow_length * ratio, head_width=0.1, head_length=0.1, fc='g', ec='g')
                         elif action == 3:
-                            self.ax.arrow(j + 0.5, i + 0.5, -0.2 * ratio, 0, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                            self.ax.arrow(j + 0.5, i + 0.5, -arrow_length * ratio, 0, head_width=0.1, head_length=0.1, fc='g', ec='g')
                         elif action == 4:
-                            self.ax.arrow(j + 0.5, i + 0.5, 0.2 * ratio, 0, head_width=0.2, head_length=0.1, fc='g', ec='g')
+                            self.ax.arrow(j + 0.5, i + 0.5, arrow_length * ratio, 0, head_width=0.1, head_length=0.1, fc='g', ec='g')
 
         # 绘制数字
         for i in range(self.n):
