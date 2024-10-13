@@ -19,4 +19,4 @@
   - `plot_end_map(Flush=True)`接口新增了Flush参数，为True可以刷新显示
   - 新增了`push_action_value(self, online=False)`接口
 - 2024/10/13:
-  - 添加了MC epsilon greedy算法
+  - 添加了MC epsilon greedy、Sarsa算法
