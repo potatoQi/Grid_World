@@ -2,6 +2,9 @@
 1. 找到对应想要测评的算法的py文件
    1. 值迭代算法：value_iteration.py
    2. 策略迭代算法：policy_iteration.py
+   3. MC Basic算法：MC_Basic.py
+   4. MC Exploring Starts算法：MC_Exploring_Starts.py
+   5. MC epsilon greedy算法：MC_epsilon_greedy.py
 2. 按照提示，实现里面的算法函数（合理利用接口）
 3. 利用测评相关接口评测自己的algorithm
 
