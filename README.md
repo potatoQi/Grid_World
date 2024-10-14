@@ -7,6 +7,8 @@
    5. MC epsilon greedy算法：MC_epsilon_greedy.py
    6. Sarsa算法：Sarsa.py
    7. Q-learning算法：Q_learning.py
+   8. DQN 1算法(DQN简易版)：DQN_1.py
+   9. DQN 2算法(DQN完整版)：DQN_2.py
 2. 按照提示，实现里面的算法函数（合理利用接口）
 3. 利用测评相关接口评测自己的algorithm
 
@@ -22,3 +24,5 @@
   - 新增了`push_action_value(self, online=False)`接口
 - 2024/10/13:
   - 添加了MC epsilon greedy、Sarsa、Q-learning算法
+- 2024/10/14
+  - 添加了DQN_1、DQN_2算法
