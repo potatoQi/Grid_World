@@ -7,8 +7,8 @@ import sys
 # 实例化
 a = GRID_WORLD(
     random_seed = 42,           # 随机种子（生成网格世界）
-    n = 5,                     # 网格世界的长度
-    m = 5,                     # 网格世界的宽度
+    n = 10,                     # 网格世界的长度
+    m = 10,                     # 网格世界的宽度
     bar_ratio = 0.3,            # 障碍的比例
     r_bar = -100,               # 障碍的reward
     r_out = -1,                 # 碰到边界的reward
@@ -117,8 +117,8 @@ class DQN_2():
         self.buffer = Buffer(maxLength=buffer_max_length)
         self.buffer_start_size = buffer_start_size
         self.batch_size = batch_size
-        self.q_net_1 = QNetwork(state_dim, action_dim, hidden_dim)  # net1是固定住的, 即用来算r + γ * max q
-        self.q_net_2 = QNetwork(state_dim, action_dim, hidden_dim)  # net2是时刻更新的, 用来拟合r + γ * max q
+        self.q_net_1 = QNetwork(state_dim, action_dim, hidden_dim).to(device)  # net1是固定住的, 即用来算r + γ * max q
+        self.q_net_2 = QNetwork(state_dim, action_dim, hidden_dim).to(device)  # net2是时刻更新的, 用来拟合r + γ * max q
         # 可以理解为net1是目标，然后net2去追赶它，等追赶到了那么net1就更新为net2
         self.optimizer = torch.optim.Adam(self.q_net_2.parameters(), lr=learning_rate)
         self.cnt = 0
@@ -138,14 +138,14 @@ class DQN_2():
     
     def update(self, states, actions, rewards, states_new, dones):
         # 获得predict
-        states = torch.tensor(states, dtype=torch.float).reshape(-1, 2)     # 排成一列
-        actions = torch.tensor(actions, dtype=torch.int64).reshape(-1, 1)   # 排成一列
+        states = torch.tensor(states, dtype=torch.float).reshape(-1, 2).to(self.device)     # 排成一列
+        actions = torch.tensor(actions, dtype=torch.int64).reshape(-1, 1).to(self.device)   # 排成一列
         predict = self.q_net_2(states).gather(1, actions)
         # 获得label
-        states_new = torch.tensor(states_new, dtype=torch.float).reshape(-1, 2) # 排成一列
+        states_new = torch.tensor(states_new, dtype=torch.float).reshape(-1, 2).to(self.device) # 排成一列
         qq = self.q_net_1(states_new).max(1)[0].reshape(-1, 1)                  # 排成一列
-        rewards = torch.tensor(rewards, dtype=torch.float).reshape(-1, 1)       # 排成一列
-        dones = torch.tensor(dones, dtype=torch.int).reshape(-1, 1)             # 排成一列
+        rewards = torch.tensor(rewards, dtype=torch.float).reshape(-1, 1).to(self.device)       # 排成一列
+        dones = torch.tensor(dones, dtype=torch.int).reshape(-1, 1).to(self.device)             # 排成一列
         label = rewards + a.gamma * (1 - dones) * qq
         # 计算loss
         loss = torch.mean(F.mse_loss(predict, label))
@@ -204,7 +204,7 @@ agent = DQN_2(
     hidden_dim=128,
     learning_rate=0.001,
     tim_of_net_upd=1000,
-    device="cpu"
+    device="cuda"
 )
 
 num_episodes = 200
