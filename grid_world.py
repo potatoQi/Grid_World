@@ -470,7 +470,7 @@ class GRID_WORLD:
 
         self.fig.canvas.draw()  # 刷新画布
         if (Flush == True):
-            plt.pause(0.5)
+            plt.pause(0.1)
         else:
             plt.show()
 

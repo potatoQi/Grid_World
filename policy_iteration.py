@@ -117,7 +117,7 @@ def policy_iteration():
         else:
             v_tmp = copy.deepcopy(a.state_value_tab)
             a.pi_tab = copy.deepcopy(pi_k)
-            a.push_state_value()
+            a.push_state_value(online=True)
 
     # check自己的算法
     end_time = time.time()  # 记录结束时间

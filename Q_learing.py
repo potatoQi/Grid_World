@@ -83,15 +83,11 @@ def Q_learning():
                 state_new = a.move(state, action)
                 if a.is_out(*state_new):
                     state_new = state
-                for aa in a.a_seq:
-                    if a.pi(state_new, aa) == 1:
-                        action_new = aa
-                        break
                 q = a.action_value(state, action)
                 qq = -1e10
                 for aa in a.a_seq:
                     qq = max(qq, a.action_value(state_new, aa))
-                a.upd_action_value(state, action, q - alpha * (q - (reward + a.gamma * qq)))
+                a.upd_action_value(state, action, reward + a.gamma * qq)
 
         for state in a.s_seq:
             policy_improve(state)
